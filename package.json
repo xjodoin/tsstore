@@ -1,0 +1,15 @@
+{
+  "name": "tsstore",
+  "version": "0.0.0",
+  "description": "",
+  "main": "tsstore.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "moment": "~2.7.0",
+    "event-stream": "~3.1.5"
+  }
+}
