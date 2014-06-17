@@ -3,11 +3,14 @@
 var fs = require('fs');
 var moment = require('moment');
 var es = require('event-stream');
+var tsindex = require('tsindex');
 
 module.exports = function (options, ready) {
 
+    var index = tsindex();
 
     var path = options.dir + '/ts.dat';
+    var indexPath = options.dir + '/index.dat';
     var wstream = fs.createWriteStream(path, { flags: 'a'});
 
     var start = fs.existsSync(path) ? fs.statSync(path).size : 0;
@@ -22,6 +25,7 @@ module.exports = function (options, ready) {
 
             //console.log('start ' + start + ' end ' + end)
             wstream.write(buf);
+            index.add(utc, start);
             start = end;
         };
 
