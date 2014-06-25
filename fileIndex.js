@@ -178,8 +178,9 @@ function create(options, ready) {
 
         var wstream = fs.createWriteStream(path, { flags: 'a'});
 
-        if (exists) {
-            start = fs.statSync(path).size;
+        start = fs.statSync(path).size;
+
+        if (exists && start > 0) {
             var xs = sf(path);
             xs.sliceReverse(-1, function (err, lines) {
 
