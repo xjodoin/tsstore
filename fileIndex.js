@@ -167,9 +167,9 @@ var indexInstance = function (globalIndex, io, ready) {
 };
 
 
-function create(ready) {
+function create(options, ready) {
 
-    var path = 'tsindex.dat';
+    var path = options.path;
     var start = 0;
 
     var exists = fs.existsSync(path);

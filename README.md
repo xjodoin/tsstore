@@ -1,4 +1,2 @@
-tsstore
-=======
 
-Nodejs time series database
+--- Nodejs time series database ---
