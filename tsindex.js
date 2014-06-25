@@ -1,34 +1,9 @@
 'use strict';
 
 var moment = require('moment');
+var async = require('async');
 
-function create() {
-    var globalIndex = [];
-
-    function add(date, start) {
-
-        var moDate = moment(date);
-        var dateArray = moDate.toArray();
-        var index = globalIndex;
-
-        dateArray.forEach(function (item) {
-            if (!index[item]) {
-                index[item] = {
-                    start: start,
-                    children: []
-                }
-            }
-            else {
-                if (index[item].start > start) {
-                    index[item].start = start;
-                }
-            }
-
-            index = index[item].children;
-        });
-
-    }
-
+function query(globalIndex) {
 
     var getFirstNotNull = function (array) {
         var notNull;
@@ -51,44 +26,62 @@ function create() {
         var startPosition = -1;
         var parentNextValues = [];
 
+        var continueEach = true;
 
-        dateArray.every(function (item) {
+        async.eachSeries(dateArray, function (item, done) {
+            if (continueEach) {
+                index.getChild(item, function (err, child) {
 
-            if (!index[item] || index[item].children.length === 0) {
-                var sliceResult = index.slice(item);
+                    if (!child || child.children.length === 0) {
+                        var sliceResult = index.children.slice(item);
 
-                if (sliceResult.length > 0) {
-                    startPosition = getFirstNotNull(sliceResult).start;
-                    return false;
-                }
-                else if (parentNextValues.length > 0) {
-                    startPosition = getFirstNotNull(parentNextValues).start;
-                    return false;
-                }
-                else {
-                    return false;
-                }
+                        if (sliceResult.length > 0) {
+                            var element = getFirstNotNull(sliceResult);
+                            index.load(element, function (err, loaded) {
+                                startPosition = loaded.value;
+                                continueEach = false;
+                                done();
+                            });
+
+                        }
+                        else if (parentNextValues.length > 0) {
+                            var element = getFirstNotNull(parentNextValues);
+                            index.load(element, function (err, loaded) {
+                                startPosition = loaded.value;
+                                continueEach = false;
+                                done();
+                            });
+
+                        }
+                        else {
+                            continueEach = false;
+                            done();
+                        }
+                    }
+                    else if (child) {
+                        parentNextValues = index.children.slice(item);
+                        index = child;
+                        done();
+                    }
+
+
+                });
             }
             else {
-                parentNextValues = index.slice(item + 1);
-                index = index[item].children;
-                return true;
+                done();
             }
 
-        });
+        }, function (err) {
+            callback(err, startPosition);
+        })
 
-        callback(null, startPosition);
 
     };
 
     return {
-        add: add,
-        gt: gt,
-        toJSON: function () {
-            return JSON.stringify(globalIndex);
-        }
+        gt: gt
     }
 
 }
 
-module.exports = create;
+module.exports = query;
